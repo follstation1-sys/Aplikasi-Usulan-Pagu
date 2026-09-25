@@ -1936,36 +1936,95 @@ function openFirstDeliberation(){
 
 function openDeliberation(proposalId){
   const c=getCurrentCycle();
+  if(!c) return;
   const p=c.proposals.find(x=>x.id===proposalId);
   if(!p){showToast('Usulan tidak ditemukan.','error');return;}
   if(state.currentUserRole==='OPD'&&p.opd!==state.currentOpdUser){showToast('Akses ditolak. Anda hanya dapat membuka usulan instansi sendiri.','error');return;}
   currentDelibId=proposalId;
-  const p3=p.paguAwal+p.usulanTambah;
-  const pct=p.usulanTambah>0?Math.round((p.setujuTapd/p.usulanTambah)*100):0;
-  document.getElementById('delib-title').textContent=p.namaKegiatan;
-  document.getElementById('delib-id-label').textContent=`ID: ${p.id} · ${p.opd}`;
-  document.getElementById('delib-p1').textContent=formatRp(p.paguAwal);
-  document.getElementById('delib-p2').textContent=formatRp(p.usulanTambah);
-  document.getElementById('delib-p3').textContent=formatRp(p3);
-  document.getElementById('delib-p4').textContent=p.setujuTapd>0?formatRp(p.setujuTapd):'–';
-  document.getElementById('delib-pct').textContent=pct+'%';
-  document.getElementById('delib-pct-bar').style.width=pct+'%';
-  document.getElementById('delib-opd').textContent=p.opd;
-  document.getElementById('delib-kategori').textContent=p.kategoriUsulan;
-  document.getElementById('delib-prioritas').textContent=p.prioritas;
-  document.getElementById('delib-status-badge').innerHTML=statusBadge(p.status);
-  document.getElementById('delib-tanggal').textContent=p.tanggalInput;
-  document.getElementById('delib-target').textContent=p.targetOutput;
-  document.getElementById('delib-justifikasi').textContent=p.justifikasi;
+  const p3=(p.paguAwal||0)+(p.usulanTambah||0);
+  const pct=p.usulanTambah>0?Math.round(((p.setujuTapd||0)/p.usulanTambah)*100):0;
+  if (document.getElementById('delib-title')) document.getElementById('delib-title').textContent=p.namaKegiatan||'-';
+  if (document.getElementById('delib-id-label')) document.getElementById('delib-id-label').textContent=`ID: ${p.id} · ${p.opd}`;
+  if (document.getElementById('delib-p1')) document.getElementById('delib-p1').textContent=formatRp(p.paguAwal||0);
+  if (document.getElementById('delib-p2')) document.getElementById('delib-p2').textContent=formatRp(p.usulanTambah||0);
+  if (document.getElementById('delib-p3')) document.getElementById('delib-p3').textContent=formatRp(p3);
+  if (document.getElementById('delib-p4')) document.getElementById('delib-p4').textContent=(p.setujuTapd||0)>0?formatRp(p.setujuTapd):'–';
+  if (document.getElementById('delib-pct')) document.getElementById('delib-pct').textContent=pct+'%';
+  if (document.getElementById('delib-pct-bar')) document.getElementById('delib-pct-bar').style.width=pct+'%';
+  if (document.getElementById('delib-opd')) document.getElementById('delib-opd').textContent=p.opd||'-';
+  if (document.getElementById('delib-kategori')) document.getElementById('delib-kategori').textContent=p.kategoriUsulan||'-';
+  if (document.getElementById('delib-prioritas')) document.getElementById('delib-prioritas').textContent=p.prioritas||'-';
+  if (document.getElementById('delib-status-badge')) document.getElementById('delib-status-badge').innerHTML=statusBadge(p.status);
+  if (document.getElementById('delib-tanggal')) document.getElementById('delib-tanggal').textContent=p.tanggalInput||'-';
+  if (document.getElementById('delib-target')) document.getElementById('delib-target').textContent=p.targetOutput||'-';
+  if (document.getElementById('delib-justifikasi')) document.getElementById('delib-justifikasi').textContent=p.justifikasi||'-';
   const lw=document.getElementById('delib-lampiran-wrap');
-  if(p.lampiran){lw.classList.remove('hidden');document.getElementById('delib-lampiran').innerHTML=`<span class="flex items-center gap-2"><i class="fas fa-file-pdf text-rose-400"></i>${sanitize(p.lampiran.name)} <span class="text-slate-600">(${sanitize(p.lampiran.size)})</span></span>`;}
-  else lw.classList.add('hidden');
+  if(lw){
+    if(p.lampiran){lw.classList.remove('hidden');document.getElementById('delib-lampiran').innerHTML=`<span class="flex items-center gap-2"><i class="fas fa-file-pdf text-rose-400"></i>${sanitize(p.lampiran.name)} <span class="text-slate-600">(${sanitize(p.lampiran.size)})</span></span>`;}
+    else lw.classList.add('hidden');
+  }
   const dp=document.getElementById('tapd-decision-panel');
-  if(state.currentUserRole==='TAPD'||state.currentUserRole==='SUPERUSER'){dp.classList.remove('hidden');document.getElementById('delib-status-input').value=p.status;document.getElementById('delib-p4-input').value=p.setujuTapd||0;document.getElementById('delib-terbilang').textContent=p.setujuTapd>0?terbilang(p.setujuTapd):'';}
-  else dp.classList.add('hidden');
+  if(dp){
+    if(state.currentUserRole==='TAPD'||state.currentUserRole==='SUPERUSER'){dp.classList.remove('hidden');document.getElementById('delib-status-input').value=p.status;document.getElementById('delib-p4-input').value=p.setujuTapd||0;document.getElementById('delib-terbilang').textContent=p.setujuTapd>0?terbilang(p.setujuTapd):'';}
+    else dp.classList.add('hidden');
+  }
   renderComments(p);
   renderHistoryLog(p);
   openModal('modal-deliberation');
+}
+
+function renderComments(p) {
+  const container = document.getElementById('delib-comments');
+  if (!container) return;
+  container.innerHTML = '';
+  const comments = p.comments || [];
+
+  if (comments.length === 0) {
+    container.innerHTML = '<p class="text-xs text-slate-500 italic text-center py-2">Belum ada catatan telaah atau komentar diskusi.</p>';
+    return;
+  }
+
+  comments.forEach(c => {
+    const d = document.createElement('div');
+    const roleCls = c.role === 'TAPD' ? 'comment-tapd' : c.role === 'BAPPEDA' ? 'comment-bappeda' : c.role === 'SYSTEM' ? 'comment-system' : 'comment-opd';
+    const roleText = c.role === 'TAPD' ? 'Tim TAPD' : c.role === 'BAPPEDA' ? 'Bappeda' : c.role === 'SYSTEM' ? 'Sistem' : 'OPD Pengusul';
+
+    d.className = `comment-bubble ${roleCls} text-xs`;
+    d.innerHTML = `
+      <div class="flex items-center justify-between text-[10px] text-slate-400 mb-1">
+        <span class="font-bold text-slate-200">${sanitize(c.author || roleText)} <span class="text-slate-500 font-normal">(${sanitize(c.role || 'OPD')})</span></span>
+        <span class="font-mono text-slate-500">${sanitize(c.time || c.timestamp || '')}</span>
+      </div>
+      <p class="text-slate-200 font-medium leading-relaxed">${sanitize(c.text || c.comment || '')}</p>
+    `;
+    container.appendChild(d);
+  });
+}
+
+function addComment() {
+  if (!currentDelibId) return;
+  const input = document.getElementById('comment-input');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) {
+    showToast('Harap tuliskan catatan telaah terlebih dahulu.', 'warn');
+    return;
+  }
+  const c = getCurrentCycle();
+  const p = c.proposals.find(x => x.id === currentDelibId);
+  if (!p) return;
+
+  if (!p.comments) p.comments = [];
+  p.comments.push({
+    author: state.currentAuthUser?.name || state.currentUserRole,
+    role: state.currentUserRole,
+    text: text,
+    time: new Date().toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })
+  });
+
+  input.value = '';
+  renderComments(p);
+  showToast('Catatan telaah berhasil ditambahkan.', 'success');
 }
 
 function renderHistoryLog(p) {
