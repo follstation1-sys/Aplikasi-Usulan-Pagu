@@ -404,6 +404,18 @@ export default function DashboardPage() {
 
             <button
               type="button"
+              onClick={() => {
+                if (filteredProposals.length > 0) {
+                  handleOpenDiscussionRoom(filteredProposals[0]);
+                }
+              }}
+              className="px-3.5 py-2 bg-amber-950 hover:bg-amber-900 text-amber-200 border border-amber-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all"
+            >
+              <i className="fas fa-gavel text-amber-400"></i> Buka Sidang TAPD
+            </button>
+
+            <button
+              type="button"
               onClick={() => setIsBeritaAcaraOpen(true)}
               className="px-3.5 py-2 bg-indigo-950 hover:bg-indigo-900 text-indigo-200 border border-indigo-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all"
             >
@@ -586,15 +598,13 @@ export default function DashboardPage() {
                   <div className="flex items-center justify-between pt-2 border-t border-slate-800/60 text-xs">
                     <span className="text-[10px] text-slate-500">{p.tanggalInput}</span>
                     
-                    {(currentUser.role === 'TAPD' || currentUser.role === 'SUPERUSER' || currentUser.role === 'BAPPEDA') && (
-                      <button
-                        type="button"
-                        onClick={() => handleOpenDiscussionRoom(p)}
-                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg flex items-center gap-1.5 transition-all text-xs"
-                      >
-                        <i className="fas fa-gavel"></i> Ruang Sidang TAPD
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleOpenDiscussionRoom(p)}
+                      className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg flex items-center gap-1.5 transition-all text-xs shadow"
+                    >
+                      <i className="fas fa-gavel text-amber-400"></i> Buka Sidang TAPD
+                    </button>
                   </div>
                 </div>
               );
