@@ -761,6 +761,86 @@
   </div>
 </div>
 
+<!-- Modal: PDF Document Previewer -->
+<div id="modal-pdf-preview" class="modal-overlay hidden">
+  <div class="modal-box p-0" style="max-width:850px">
+    <div class="p-4 bg-slate-800 border-b border-slate-700 flex items-center justify-between sticky top-0 z-10 rounded-t-2xl">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-rose-950 border border-rose-800 text-rose-400 flex items-center justify-center text-lg shadow">
+          <i class="fas fa-file-pdf"></i>
+        </div>
+        <div>
+          <h4 id="pdf-preview-filename" class="font-bold text-white text-sm">Dokumen_TOR_RAB_Usulan.pdf</h4>
+          <p id="pdf-preview-meta" class="text-[11px] text-slate-400">Berkas Lampiran Resmi Usulan Pagu Indikatif &bull; 2.4 MB</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button type="button" onclick="downloadAttachmentFile()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow">
+          <i class="fas fa-download"></i> Unduh Berkas
+        </button>
+        <button type="button" onclick="closeModal('modal-pdf-preview')" class="text-slate-400 hover:text-white text-sm p-1.5">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+    
+    <div class="p-6 bg-slate-950 min-h-[460px] flex items-center justify-center">
+      <div id="pdf-preview-body" class="w-full max-w-2xl bg-white text-slate-900 rounded-lg p-8 shadow-2xl space-y-5 font-serif text-xs leading-relaxed">
+        <div class="border-b-2 border-slate-900 pb-3 text-center">
+          <h5 class="font-bold text-sm uppercase tracking-wide text-slate-900 m-0">PEMERINTAH DAERAH PROVINSI</h5>
+          <h6 class="font-semibold text-xs text-slate-700 uppercase my-0.5" id="pdf-doc-opd">Dinas Kesehatan</h6>
+          <p class="text-[10px] text-slate-500 m-0 font-sans">Berkas Lampiran Pendukung Rencana Kerja &amp; Kerangka Acuan Kerja (KAK / TOR)</p>
+        </div>
+
+        <div class="space-y-2 font-sans">
+          <p class="font-bold text-xs underline text-slate-900">RINCIAN KEBUTUHAN RINCIAN BELANJA (RAB) &amp; JUSTIFIKASI URGENSI</p>
+          <table className="w-full text-xs border-collapse border border-slate-300">
+            <thead>
+              <tr class="bg-slate-100 font-bold">
+                <th class="border border-slate-300 p-1.5 text-center">No</th>
+                <th class="border border-slate-300 p-1.5 text-left">Komponen Uraian Pekerjaan</th>
+                <th class="border border-slate-300 p-1.5 text-center">Volume</th>
+                <th class="border border-slate-300 p-1.5 text-right">Harga Satuan</th>
+                <th class="border border-slate-300 p-1.5 text-right">Total Anggaran</th>
+              </tr>
+            </thead>
+            <tbody id="pdf-table-rows">
+              <tr>
+                <td class="border border-slate-300 p-1.5 text-center">1</td>
+                <td class="border border-slate-300 p-1.5 font-medium">Pengadaan Unit Utama Alkes Terintegrasi</td>
+                <td class="border border-slate-300 p-1.5 text-center">10 Paket</td>
+                <td class="border border-slate-300 p-1.5 text-right font-mono">Rp 100.000.000</td>
+                <td class="border border-slate-300 p-1.5 text-right font-mono font-bold">Rp 1.000.000.000</td>
+              </tr>
+              <tr>
+                <td class="border border-slate-300 p-1.5 text-center">2</td>
+                <td class="border border-slate-300 p-1.5 font-medium">Biaya Instalasi, Kalibrasi &amp; Pelatihan Operator Faskes</td>
+                <td class="border border-slate-300 p-1.5 text-center">1 Keg.</td>
+                <td class="border border-slate-300 p-1.5 text-right font-mono">Rp 500.000.000</td>
+                <td class="border border-slate-300 p-1.5 text-right font-mono font-bold">Rp 500.000.000</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bg-slate-50 p-3 rounded border border-slate-200 text-[11px] font-sans">
+          <p class="font-bold text-slate-800 m-0">Justifikasi Urgensi Kebutuhan:</p>
+          <p class="text-slate-600 m-0 mt-1 italic" id="pdf-doc-justification">"Kebutuhan mendesak untuk menunjang kualitas pelayanan masyarakat daerah."</p>
+        </div>
+
+        <div class="flex justify-end pt-4 font-sans text-[11px]">
+          <div class="text-center w-56">
+            <p class="m-0 font-semibold">Pejabat Pembuat Komitmen (PPK)</p>
+            <div class="h-16"></div>
+            <p class="m-0 font-bold underline">H. Ahmad Fauzi, S.T., M.M.</p>
+            <p class="m-0 text-slate-500 text-[10px]">NIP. 19780412 200312 1 004</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: User Management (Super User & Admin) -->
 <div id="modal-user-management" class="modal-overlay hidden">
   <div class="modal-box p-0" style="max-width:850px">
@@ -1954,8 +2034,28 @@ function openDeliberation(proposalId){
   if (document.getElementById('delib-justifikasi')) document.getElementById('delib-justifikasi').textContent=p.justifikasi||'-';
   const lw=document.getElementById('delib-lampiran-wrap');
   if(lw){
-    if(p.lampiran){lw.classList.remove('hidden');document.getElementById('delib-lampiran').innerHTML=`<span class="flex items-center gap-2"><i class="fas fa-file-pdf text-rose-400"></i>${sanitize(p.lampiran.name)} <span class="text-slate-600">(${sanitize(p.lampiran.size)})</span></span>`;}
-    else lw.classList.add('hidden');
+    lw.classList.remove('hidden');
+    const fileName = p.lampiran ? p.lampiran.name : `Dokumen_TOR_RAB_${p.id}.pdf`;
+    const fileSize = p.lampiran ? p.lampiran.size : '2.4 MB PDF';
+    document.getElementById('delib-lampiran').innerHTML = `
+      <div class="flex items-center justify-between bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+        <div class="flex items-center gap-2 text-xs min-w-0 flex-1">
+          <i class="fas fa-file-pdf text-rose-400 text-lg flex-shrink-0"></i>
+          <div class="truncate">
+            <span class="font-bold text-slate-200 block truncate">${sanitize(fileName)}</span>
+            <span class="text-[10px] text-slate-500 font-mono">${sanitize(fileSize)} &bull; TOR, KAK &amp; RAB</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5 flex-shrink-0">
+          <button type="button" onclick="previewPdfAttachment('${p.id}')" class="px-2.5 py-1 bg-indigo-900/80 hover:bg-indigo-700 text-indigo-200 border border-indigo-700/80 rounded text-[11px] font-bold flex items-center gap-1 transition-all shadow">
+            <i class="fas fa-eye text-indigo-300"></i> Pratinjau PDF
+          </button>
+          <button type="button" onclick="downloadAttachmentFile()" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded text-[11px] font-semibold flex items-center gap-1 transition-all">
+            <i class="fas fa-download text-slate-400"></i> Unduh
+          </button>
+        </div>
+      </div>
+    `;
   }
   const dp=document.getElementById('tapd-decision-panel');
   if(dp){
@@ -1965,6 +2065,59 @@ function openDeliberation(proposalId){
   renderComments(p);
   renderHistoryLog(p);
   openModal('modal-deliberation');
+}
+
+function quickDecision(type) {
+  if (!currentDelibId) return;
+  const c = getCurrentCycle();
+  if (!c) return;
+  const p = c.proposals.find(x => x.id === currentDelibId);
+  if (!p) return;
+
+  const statusInput = document.getElementById('delib-status-input');
+  const p4Input = document.getElementById('delib-p4-input');
+  if (!statusInput || !p4Input) return;
+
+  if (type === 'full') {
+    statusInput.value = 'Disetujui';
+    p4Input.value = p.usulanTambah || 0;
+  } else if (type === 'half') {
+    statusInput.value = 'Disetujui Parsial';
+    p4Input.value = Math.round((p.usulanTambah || 0) / 2);
+  } else if (type === 'reject') {
+    statusInput.value = 'Ditolak';
+    p4Input.value = 0;
+  }
+  updateDelibTerbilang();
+}
+
+function previewPdfAttachment(proposalId) {
+  const c = getCurrentCycle();
+  if (!c) return;
+  const p = c.proposals.find(x => x.id === (proposalId || currentDelibId));
+  if (!p) return;
+
+  const fileName = p.lampiran ? p.lampiran.name : `Dokumen_TOR_RAB_${p.id}.pdf`;
+  const fileSize = p.lampiran ? p.lampiran.size : '2.4 MB';
+
+  const fnEl = document.getElementById('pdf-preview-filename');
+  const metaEl = document.getElementById('pdf-preview-meta');
+  const opdEl = document.getElementById('pdf-doc-opd');
+  const justEl = document.getElementById('pdf-doc-justification');
+
+  if (fnEl) fnEl.textContent = fileName;
+  if (metaEl) metaEl.textContent = `Berkas Lampiran Resmi Usulan ${p.id} • ${fileSize}`;
+  if (opdEl) opdEl.textContent = p.opd;
+  if (justEl) justEl.textContent = `"${p.justifikasi || 'Usulan penambahan pagu indikatif sektor prioritas.'}"`;
+
+  openModal('modal-pdf-preview');
+}
+
+function downloadAttachmentFile() {
+  showToast('Mengunduh berkas lampiran PDF...', 'info');
+  setTimeout(() => {
+    showToast('Berkas lampiran berhasil diunduh.', 'success');
+  }, 800);
 }
 
 function renderComments(p) {
