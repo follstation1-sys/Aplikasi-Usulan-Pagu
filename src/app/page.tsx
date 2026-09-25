@@ -336,6 +336,15 @@ export default function DashboardPage() {
               </button>
             </div>
 
+            {(currentUser.role === 'SUPERUSER' || currentUser.role === 'TAPD') && (
+              <Link
+                href="/admin/master"
+                className="px-3 py-1.5 bg-indigo-950 hover:bg-indigo-900 text-indigo-200 border border-indigo-700/80 rounded-lg font-semibold flex items-center gap-1.5 transition-all"
+              >
+                <i className="fas fa-database text-indigo-400"></i> Kelola Master Data
+              </Link>
+            )}
+
             {currentUser.role === 'SUPERUSER' && (
               <Link
                 href="/admin/users"
@@ -545,9 +554,6 @@ export default function DashboardPage() {
                       {p.status}
                     </span>
                   </div>
-
-                  {/* Spike Warning Badge if P2 > 50% P1 */}
-                  <ProposalSpikeBadge initialBudget={p1} proposedAddition={p2} />
 
                   {/* Sub Activity & Urgency Justification */}
                   <div className="text-xs space-y-1 bg-slate-950/70 p-3 rounded-xl border border-slate-800">

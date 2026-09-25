@@ -305,6 +305,9 @@
       <div id="nav-user-mgmt" class="sidebar-link hover:text-amber-400 hidden" onclick="showUserManagementModal()">
         <i class="fas fa-users-cog w-4 text-center text-amber-400"></i> Kelola Pengguna
       </div>
+      <div id="nav-master-data" class="sidebar-link hover:text-indigo-400 hidden" onclick="showMasterDataModal()">
+        <i class="fas fa-database w-4 text-center text-indigo-400"></i> Kelola Master Data
+      </div>
       <div class="sidebar-link" onclick="goBackToLogin()">
         <i class="fas fa-exchange-alt w-4 text-center"></i> Ganti Sesi
       </div>
@@ -837,6 +840,86 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Master Data Management (Super User & TAPD) -->
+<div id="modal-master-data" class="modal-overlay hidden">
+  <div class="modal-box p-0" style="max-width:850px">
+    <div class="p-4 bg-slate-800 border-b border-slate-700 flex items-center justify-between sticky top-0 z-10 rounded-t-2xl">
+      <div class="flex items-center gap-2">
+        <i class="fas fa-database text-indigo-400 text-lg"></i>
+        <div>
+          <h3 class="font-bold text-white text-sm">Kelola Master Data System</h3>
+          <p class="text-[11px] text-slate-400">Pengaturan Master Skala Prioritas &amp; Master Instansi OPD (Khusus SUPERUSER &amp; TAPD)</p>
+        </div>
+      </div>
+      <button onclick="closeModal('modal-master-data')" class="text-slate-400 hover:text-white text-sm"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="p-5 space-y-4 text-xs">
+      <div class="flex border-b border-slate-800">
+        <button id="tab-btn-opd" onclick="switchMasterTab('opd')" class="px-4 py-2 border-b-2 border-indigo-500 font-bold text-indigo-300">
+          <i class="fas fa-building mr-1.5"></i> Master Instansi OPD (<span id="master-opd-count">49</span>)
+        </button>
+        <button id="tab-btn-priority" onclick="switchMasterTab('priority')" class="px-4 py-2 text-slate-400 font-semibold hover:text-slate-200">
+          <i class="fas fa-tags mr-1.5"></i> Master Skala Prioritas (<span id="master-priority-count">3</span>)
+        </button>
+      </div>
+
+      {/* Tab 1 Content: Master OPD */}
+      <div id="master-tab-opd" class="space-y-4">
+        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-3">
+          <span class="font-bold text-indigo-300 text-xs uppercase tracking-wider block">Tambah Instansi Perangkat Daerah (OPD) Baru</span>
+          <div class="flex gap-2">
+            <input id="input-new-opd" type="text" placeholder="Masukkan nama lengkap Perangkat Daerah baru..." class="form-input text-xs flex-1" />
+            <button onclick="addMasterOpd()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 transition-all shadow">
+              <i class="fas fa-plus"></i> Tambah OPD
+            </button>
+          </div>
+        </div>
+
+        <div class="table-scroll border border-slate-800 rounded-xl max-h-64 overflow-y-auto">
+          <table class="w-full text-xs">
+            <thead>
+              <tr class="bg-slate-950 text-slate-400 border-b border-slate-800">
+                <th class="py-2.5 px-3 text-left w-12">No</th>
+                <th class="py-2.5 px-3 text-left">Nama Instansi Perangkat Daerah</th>
+                <th class="py-2.5 px-3 text-center w-24">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="master-opd-list-body" class="divide-y divide-slate-800/60"></tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Tab 2 Content: Master Prioritas */}
+      <div id="master-tab-priority" class="space-y-4 hidden">
+        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-3">
+          <span class="font-bold text-purple-300 text-xs uppercase tracking-wider block">Tambah Skala Prioritas Anggaran Baru</span>
+          <div class="flex gap-2">
+            <input id="input-new-priority" type="text" placeholder="Contoh: Prioritas 4 (Stunting &amp; Kemiskinan Ekstrem)..." class="form-input text-xs flex-1" />
+            <button onclick="addMasterPriority()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 transition-all shadow">
+              <i class="fas fa-plus"></i> Tambah Prioritas
+            </button>
+          </div>
+        </div>
+
+        <div class="table-scroll border border-slate-800 rounded-xl max-h-64 overflow-y-auto">
+          <table class="w-full text-xs">
+            <thead>
+              <tr class="bg-slate-950 text-slate-400 border-b border-slate-800">
+                <th class="py-2.5 px-3 text-left w-12">No</th>
+                <th class="py-2.5 px-3 text-left">Nama Skala Prioritas</th>
+                <th class="py-2.5 px-3 text-center w-24">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="master-priority-list-body" class="divide-y divide-slate-800/60"></tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -1508,6 +1591,11 @@ function updateSessionUI(){
     if (navUserMgmt) {
       navUserMgmt.classList.toggle('hidden', state.currentAuthUser.role !== 'SUPERUSER');
     }
+    // Menu Kelola Master Data visible for SUPERUSER and TAPD roles
+    const navMasterData = document.getElementById('nav-master-data');
+    if (navMasterData) {
+      navMasterData.classList.toggle('hidden', !(state.currentAuthUser.role === 'SUPERUSER' || state.currentAuthUser.role === 'TAPD'));
+    }
   }
 
   document.getElementById('btn-new-proposal').classList.remove('hidden');
@@ -1713,9 +1801,6 @@ function renderDetailedCards(proposals,container){
     const totalP2=opdProposals.reduce((a,b)=>a+b.usulanTambah,0);
     const totalP4=opdProposals.reduce((a,b)=>a+(b.setujuTapd||0),0);
 
-    const isLonjakan = totalP1 > 0 && totalP2 > (totalP1 * 0.5);
-    const overBadge = isLonjakan ? `<span class="badge bg-amber-950/90 text-amber-300 border border-amber-700/80 flex items-center gap-1 py-0.5 px-2.5 animate-pulse" title="Perhatian: Usulan Pagu meningkat lebih dari 50% dari Pagu Awal"><i class="fas fa-exclamation-triangle text-amber-400"></i> Lonjakan Usulan (+${formatRp(totalP2)})</span>` : '';
-
     const groupHeader=document.createElement('div');
     groupHeader.className='flex items-center justify-between gap-3 mt-6 mb-3 pb-2 border-b border-slate-700/60 flex-wrap';
     groupHeader.innerHTML=`
@@ -1725,7 +1810,6 @@ function renderDetailedCards(proposals,container){
         </div>
         <h3 class="font-extrabold text-white text-sm font-jakarta">${sanitize(opd)}</h3>
         <span class="badge bg-indigo-950 text-indigo-300 border border-indigo-800/80">${opdProposals.length} Usulan</span>
-        ${overBadge}
       </div>
       <div class="flex items-center gap-4 text-xs">
         <span class="text-slate-400">Total Usulan Pagu: <strong class="text-violet-400">${formatRp(totalP2)}</strong></span>
