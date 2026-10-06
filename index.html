@@ -4140,6 +4140,25 @@
       updateDelibTerbilang();
     }
 
+    let activeBlobUrl = null;
+
+    function dataURItoBlob(dataURI) {
+      try {
+        const parts = dataURI.split(',');
+        const byteString = atob(parts[1]);
+        const mimeString = parts[0].split(':')[1].split(';')[0];
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) {
+          ia[i] = byteString.charCodeAt(i);
+        }
+        return new Blob([ab], { type: mimeString });
+      } catch (e) {
+        console.warn('[PDF] Failed to convert base64 to blob:', e);
+        return null;
+      }
+    }
+
     function previewPdfAttachment(proposalId) {
       const c = getCurrentCycle();
       if (!c) return;
@@ -4159,10 +4178,21 @@
       if (fnEl) fnEl.textContent = fileName;
       if (metaEl) metaEl.textContent = `Berkas PDF Lampiran Usulan • ${fileSize}`;
 
+      if (activeBlobUrl) {
+        try { URL.revokeObjectURL(activeBlobUrl); } catch (e) {}
+        activeBlobUrl = null;
+      }
+
       if (iframeEl) {
         if (hasBase64Pdf) {
           iframeEl.removeAttribute('srcdoc');
-          iframeEl.src = p.lampiran.url;
+          const blob = dataURItoBlob(p.lampiran.url);
+          if (blob) {
+            activeBlobUrl = URL.createObjectURL(blob);
+            iframeEl.src = activeBlobUrl;
+          } else {
+            iframeEl.src = p.lampiran.url;
+          }
         } else {
           iframeEl.src = '';
           iframeEl.srcdoc = `
