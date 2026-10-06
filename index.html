@@ -4003,7 +4003,7 @@
       saveAppStateToStorage();
 
       if (supabaseClient) {
-        supabaseClient.from('budget_proposals').insert([{
+        supabaseClient.from('budget_proposals').upsert([{
           id: id,
           cycle_id: state.activeCycleId,
           organization_name: proposal.opd,
@@ -4021,8 +4021,12 @@
           urgency_justification: proposal.justifikasi,
           attachment_name: proposal.lampiran ? proposal.lampiran.name : null
         }]).then(({ data, error }) => {
-          if (error) console.warn('[SUPABASE] Notice on insert:', error.message);
-          else console.log('[SUPABASE] Proposal inserted to database:', id);
+          if (error) {
+            console.warn('[SUPABASE] Warning on cloud save:', error.message);
+            showToast(`Simpan Cloud Warning: ${error.message}`, 'warn');
+          } else {
+            console.log('[SUPABASE] Proposal saved to cloud database:', id);
+          }
         }).catch(err => console.warn('[SUPABASE] Error:', err));
       }
 
@@ -5667,6 +5671,10 @@ Justifikasi   :
     populateCycleDropdown();
     restoreAuthSession();
     syncFromSupabaseDatabase();
+    // Auto sync data antar perangkat setiap 10 detik
+    setInterval(() => {
+      syncFromSupabaseDatabase();
+    }, 10000);
   </script>
 </body>
 
