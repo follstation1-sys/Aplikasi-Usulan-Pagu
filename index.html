@@ -3947,8 +3947,20 @@
       if (!subkegiatan) { showToast('Detail Usulan / Output wajib diisi.', 'error'); return; }
       if (!p2 || p2 <= 0) { showToast('Usulan tambahan (Usulan Pagu) harus lebih dari 0.', 'error'); return; }
       if (!just) { showToast('Justifikasi kebutuhan wajib diisi.', 'error'); return; }
-
+      
       const c = getCurrentCycle();
+
+      if (!editingProposalId && !selectedPdfFile) {
+        showToast('Wajib mengunggah Berkas Lampiran PDF Proposal!', 'error');
+        return;
+      }
+      if (editingProposalId) {
+        const existingP = c.proposals.find(x => x.id === editingProposalId);
+        if (existingP && !existingP.lampiran && !selectedPdfFile) {
+          showToast('Wajib mengunggah Berkas Lampiran PDF Proposal!', 'error');
+          return;
+        }
+      }
 
       if (editingProposalId) {
         const p = c.proposals.find(x => x.id === editingProposalId);
