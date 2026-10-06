@@ -3982,7 +3982,7 @@
 
           if (supabaseClient) {
             supabaseClient.from('budget_proposals').update({
-              organization_name: p.opd,
+              program_name: p.opd,
               category: p.kategoriUsulan,
               priority: p.prioritas,
               activity_name: p.namaKegiatan,
@@ -3991,7 +3991,8 @@
               proposed_addition: p.usulanTambah,
               target_output: p.targetOutput,
               urgency_justification: p.justifikasi,
-              attachment_name: p.lampiran ? p.lampiran.name : null
+              attachment_name: p.lampiran ? p.lampiran.name : null,
+              attachment_url: p.lampiran ? p.lampiran.url : null
             }).eq('id', p.id).then(({ error }) => {
               if (error) console.warn('[SUPABASE] Notice on update:', error.message);
               else console.log('[SUPABASE] Proposal updated in database:', p.id);
@@ -4020,7 +4021,7 @@
           cycle_id: state.activeCycleId,
           category: proposal.kategoriUsulan,
           priority: proposal.prioritas,
-          program_name: '',
+          program_name: proposal.opd,
           activity_name: proposal.namaKegiatan,
           sub_activity_name: proposal.subKegiatan,
           initial_budget: proposal.paguAwal,
@@ -4029,7 +4030,8 @@
           status: 'Diajukan',
           target_output: proposal.targetOutput,
           urgency_justification: proposal.justifikasi,
-          attachment_name: proposal.lampiran ? proposal.lampiran.name : null
+          attachment_name: proposal.lampiran ? proposal.lampiran.name : null,
+          attachment_url: proposal.lampiran ? proposal.lampiran.url : null
         };
 
         supabaseClient.from('budget_proposals').upsert([payload]).then(({ data, error }) => {
@@ -5575,7 +5577,7 @@ Justifikasi   :
             }
             const cycleObj = state.cycles[targetCycleId];
             const existing = cycleObj.proposals.find(p => p.id === row.id);
-            const dbOpd = row.organization_name || row.opd_name || row.opd;
+            const dbOpd = row.program_name || row.organization_name || row.opd_name || row.opd;
             if (!existing) {
               cycleObj.proposals.unshift({
                 id: row.id,
@@ -5591,7 +5593,7 @@ Justifikasi   :
                 status: row.status || 'Diajukan',
                 targetOutput: row.target_output || '',
                 justifikasi: row.urgency_justification || '',
-                lampiran: row.attachment_name ? { name: row.attachment_name, size: 'PDF Dokumen' } : null,
+                lampiran: row.attachment_name ? { name: row.attachment_name, size: 'PDF Dokumen', url: row.attachment_url } : null,
                 tanggalInput: row.created_at ? new Date(row.created_at).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
                 comments: []
               });
@@ -5601,6 +5603,9 @@ Justifikasi   :
               if (dbOpd) existing.opd = dbOpd;
               if (row.activity_name) existing.namaKegiatan = row.activity_name;
               if (row.sub_activity_name) existing.subKegiatan = row.sub_activity_name;
+              if (row.attachment_url) {
+                existing.lampiran = { name: row.attachment_name || 'Dokumen Proposal.pdf', size: 'PDF Dokumen', url: row.attachment_url };
+              }
             }
           });
           console.log('[SUPABASE] Synced', dbProposals.length, 'proposals from Supabase database.');
