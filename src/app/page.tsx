@@ -126,43 +126,6 @@ export default function DashboardPage() {
   const [isBeritaAcaraOpen, setIsBeritaAcaraOpen] = useState(false);
   const [selectedProposalForDiscussion, setSelectedProposalForDiscussion] = useState<BudgetProposal | null>(null);
 
-  // Quick Role Switching Handler for Testing
-  const handleSwitchUserRole = (role: UserRole) => {
-    if (role === 'SUPERUSER') {
-      setCurrentUser({
-        username: 'superuser',
-        role: 'SUPERUSER',
-        fullName: 'Administrator Utama System',
-        opdName: 'Badan Perencanaan Pembangunan Daerah',
-        supervisedOpds: MASTER_49_OPD
-      });
-    } else if (role === 'TAPD') {
-      setCurrentUser({
-        username: 'admin.tapd',
-        role: 'TAPD',
-        fullName: 'Ketua Tim TAPD Provinsi',
-        opdName: 'Sekretariat Daerah',
-        supervisedOpds: MASTER_49_OPD
-      });
-    } else if (role === 'BAPPEDA') {
-      setCurrentUser({
-        username: 'bappeda',
-        role: 'BAPPEDA',
-        fullName: 'Perencana Bidang Pengampuan Bappeda',
-        opdName: 'Badan Perencanaan Pembangunan Daerah',
-        supervisedOpds: ['Dinas Kesehatan', 'Dinas Pendidikan Dan Kebudayaan', 'Badan Penanggulangan Bencana Daerah']
-      });
-    } else {
-      setCurrentUser({
-        username: 'opd.bpbd',
-        role: 'OPD',
-        fullName: 'Operator Anggaran BPBD',
-        opdName: 'Badan Penanggulangan Bencana Daerah',
-        supervisedOpds: []
-      });
-    }
-  };
-
   // Filtered Proposals based on RBAC & Toolbar
   const visibleProposalsByRole = proposals.filter(p => {
     if (currentUser.role === 'OPD') {
@@ -216,6 +179,15 @@ export default function DashboardPage() {
       ]
     }));
     setProposals([...importedProposals, ...proposals]);
+  };
+
+  const handleDeleteProposal = (proposalId: string) => {
+    const target = proposals.find(p => p.id === proposalId);
+    if (!target) return;
+    if (confirm(`Apakah Anda yakin ingin menghapus usulan ${proposalId} - "${target.activityName || target.namaKegiatan}" (${target.opd})?`)) {
+      setProposals(proposals.filter(p => p.id !== proposalId));
+      deleteBudgetProposalFromDb(proposalId).catch(err => console.warn('[SUPABASE] Notice on delete:', err));
+    }
   };
 
   const handleOpenDiscussionRoom = (proposal: BudgetProposal) => {
@@ -293,47 +265,6 @@ export default function DashboardPage() {
                 <option value="Perubahan 2027">Perubahan 2027</option>
                 <option value="Murni 2028">Murni 2028</option>
               </select>
-            </div>
-
-            {/* Role Switcher Presets */}
-            <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-lg p-1">
-              <span className="text-[10px] text-slate-500 font-semibold px-1">Role Active:</span>
-              <button
-                type="button"
-                onClick={() => handleSwitchUserRole('SUPERUSER')}
-                className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
-                  currentUser.role === 'SUPERUSER' ? 'bg-purple-900 text-purple-200 border border-purple-600' : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                SUPERUSER
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSwitchUserRole('TAPD')}
-                className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
-                  currentUser.role === 'TAPD' ? 'bg-indigo-900 text-indigo-200 border border-indigo-600' : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                TAPD
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSwitchUserRole('BAPPEDA')}
-                className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
-                  currentUser.role === 'BAPPEDA' ? 'bg-emerald-900 text-emerald-200 border border-emerald-600' : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                BAPPEDA
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSwitchUserRole('OPD')}
-                className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
-                  currentUser.role === 'OPD' ? 'bg-amber-900 text-amber-200 border border-amber-600' : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                OPD
-              </button>
             </div>
 
             {(currentUser.role === 'SUPERUSER' || currentUser.role === 'TAPD') && (
@@ -592,13 +523,23 @@ export default function DashboardPage() {
                   <div className="flex items-center justify-between pt-2 border-t border-slate-800/60 text-xs">
                     <span className="text-[10px] text-slate-500">{p.tanggalInput}</span>
                     
-                    <button
-                      type="button"
-                      onClick={() => handleOpenDiscussionRoom(p)}
-                      className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg flex items-center gap-1.5 transition-all text-xs shadow"
-                    >
-                      <i className="fas fa-gavel text-amber-400"></i> Buka Sidang TAPD
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenDiscussionRoom(p)}
+                        className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg flex items-center gap-1.5 transition-all text-xs shadow"
+                      >
+                        <i className="fas fa-gavel text-amber-400"></i> Buka Sidang TAPD
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteProposal(p.id)}
+                        className="px-2.5 py-1.5 bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800/80 font-bold rounded-lg flex items-center gap-1 transition-all text-xs shadow"
+                        title="Hapus Usulan"
+                      >
+                        <i className="fas fa-trash-alt"></i> Hapus
+                      </button>
+                    </div>
                   </div>
                 </div>
               );

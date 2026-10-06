@@ -22,12 +22,6 @@ export default function LoginPage() {
     { id: 'c-2028-murni', label: 'Murni 2028', type: 'murni', desc: 'Perencanaan Kerangka Pendanaan Jangka Menengah 2028' },
   ];
 
-  const fillPresetAccount = (user: string, pass: string) => {
-    setUsername(user);
-    setPassword(pass);
-    setErrorMsg('');
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!username || !password) {
@@ -156,56 +150,6 @@ export default function LoginPage() {
                 <i className="fas fa-sign-in-alt"></i> Masuk Sistem
               </button>
             </form>
-
-            {/* Quick-Fill Demo Presets */}
-            <div className="mt-6 pt-4 border-t border-slate-700/50">
-              <p className="text-[10px] font-semibold text-slate-400 mb-2 uppercase tracking-wider flex items-center justify-between">
-                <span><i class="fas fa-id-card text-indigo-400 mr-1"></i>Presets Akun Demo (4 Peran):</span>
-                <span className="text-[9px] text-slate-500">Klik isi otomatis</span>
-              </p>
-              <div className="grid grid-cols-2 gap-1.5 text-[11px]">
-                <button
-                  type="button"
-                  onClick={() => fillPresetAccount('superuser', 'super123')}
-                  className="px-2.5 py-1.5 bg-purple-950/80 hover:bg-purple-900 text-purple-200 rounded border border-purple-700/60 text-left transition-colors flex items-center justify-between col-span-2 shadow-sm"
-                >
-                  <span>⚡ Super User (Administrator Utama)</span>
-                  <i className="fas fa-arrow-right text-[9px] text-purple-400"></i>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => fillPresetAccount('admin.tapd', 'tapd123')}
-                  className="px-2.5 py-1.5 bg-slate-800/80 hover:bg-indigo-900/50 text-indigo-300 rounded border border-slate-700/60 text-left transition-colors flex items-center justify-between"
-                >
-                  <span>👑 TAPD Admin</span>
-                  <i className="fas fa-arrow-right text-[9px] text-indigo-400"></i>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => fillPresetAccount('bappeda', 'bappeda123')}
-                  className="px-2.5 py-1.5 bg-slate-800/80 hover:bg-emerald-900/50 text-emerald-300 rounded border border-slate-700/60 text-left transition-colors flex items-center justify-between"
-                >
-                  <span>🏛 Bappeda Pengampu</span>
-                  <i className="fas fa-arrow-right text-[9px] text-emerald-400"></i>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => fillPresetAccount('opd.bpbd', 'bpbd123')}
-                  className="px-2.5 py-1.5 bg-slate-800/80 hover:bg-amber-900/50 text-amber-300 rounded border border-slate-700/60 text-left transition-colors flex items-center justify-between"
-                >
-                  <span>🏢 OPD BPBD</span>
-                  <i className="fas fa-arrow-right text-[9px] text-amber-400"></i>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => fillPresetAccount('opd.diskominfo', 'diskominfo123')}
-                  className="px-2.5 py-1.5 bg-slate-800/80 hover:bg-cyan-900/50 text-cyan-300 rounded border border-slate-700/60 text-left transition-colors flex items-center justify-between"
-                >
-                  <span>📡 Diskominfo</span>
-                  <i className="fas fa-arrow-right text-[9px] text-cyan-400"></i>
-                </button>
-              </div>
-            </div>
           </div>
         ) : (
           <div className="bg-slate-900/80 backdrop-blur-xl rounded-2xl p-7 shadow-2xl border border-emerald-700/60 text-center space-y-4">

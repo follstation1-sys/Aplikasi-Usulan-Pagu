@@ -50,6 +50,23 @@ export default function MasterDataPage() {
     showToast(`Instansi '${val}' berhasil ditambahkan.`);
   };
 
+  const handleEditOpd = (oldName: string) => {
+    const newName = prompt('Ubah Nama Instansi Perangkat Daerah (OPD):', oldName);
+    if (newName === null) return;
+    const trimmed = newName.trim();
+    if (!trimmed) {
+      showToast('Nama Instansi OPD tidak boleh kosong.');
+      return;
+    }
+    if (trimmed === oldName) return;
+    if (opdList.some(o => o.toLowerCase() === trimmed.toLowerCase())) {
+      showToast(`Instansi '${trimmed}' sudah terdaftar.`);
+      return;
+    }
+    setOpdList(opdList.map(o => o === oldName ? trimmed : o));
+    showToast(`Instansi '${oldName}' berhasil diperbarui menjadi '${trimmed}'.`);
+  };
+
   const handleDeleteOpd = (opdName: string) => {
     if (confirm(`Apakah Anda yakin ingin menghapus instansi '${opdName}' dari master data?`)) {
       setOpdList(opdList.filter(o => o !== opdName));
@@ -71,6 +88,23 @@ export default function MasterDataPage() {
     setPriorityList([val, ...priorityList]);
     setNewPriorityInput('');
     showToast(`Skala prioritas '${val}' berhasil ditambahkan.`);
+  };
+
+  const handleEditPriority = (oldName: string) => {
+    const newName = prompt('Ubah Nama Skala Prioritas:', oldName);
+    if (newName === null) return;
+    const trimmed = newName.trim();
+    if (!trimmed) {
+      showToast('Nama Skala Prioritas tidak boleh kosong.');
+      return;
+    }
+    if (trimmed === oldName) return;
+    if (priorityList.some(p => p.toLowerCase() === trimmed.toLowerCase())) {
+      showToast(`Skala prioritas '${trimmed}' sudah ada.`);
+      return;
+    }
+    setPriorityList(priorityList.map(p => p === oldName ? trimmed : p));
+    showToast(`Skala prioritas '${oldName}' berhasil diperbarui menjadi '${trimmed}'.`);
   };
 
   const handleDeletePriority = (priorityName: string) => {
@@ -110,38 +144,6 @@ export default function MasterDataPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Quick Role Toggle for Demo */}
-          <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-lg p-1 text-xs">
-            <span className="text-[10px] text-slate-500 font-semibold px-1">Role:</span>
-            <button
-              type="button"
-              onClick={() => setCurrentUserRole('SUPERUSER')}
-              className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                currentUserRole === 'SUPERUSER' ? 'bg-purple-900 text-purple-200' : 'text-slate-400'
-              }`}
-            >
-              SUPERUSER
-            </button>
-            <button
-              type="button"
-              onClick={() => setCurrentUserRole('TAPD')}
-              className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                currentUserRole === 'TAPD' ? 'bg-indigo-900 text-indigo-200' : 'text-slate-400'
-              }`}
-            >
-              TAPD
-            </button>
-            <button
-              type="button"
-              onClick={() => setCurrentUserRole('OPD')}
-              className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                currentUserRole === 'OPD' ? 'bg-amber-900 text-amber-200' : 'text-slate-400'
-              }`}
-            >
-              OPD
-            </button>
-          </div>
-
           <Link
             href="/"
             className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all"
@@ -215,25 +217,35 @@ export default function MasterDataPage() {
                 <table className="w-full text-xs text-left">
                   <thead>
                     <tr className="bg-slate-950 text-slate-400 border-b border-slate-800 font-semibold uppercase text-[10px] tracking-wider">
-                      <th className="p-3 w-12 text-center">No</th>
+                      <th className="p-3 w-12 text-center">No.</th>
                       <th className="p-3">Nama Instansi Perangkat Daerah</th>
-                      <th className="p-3 text-center w-28">Aksi</th>
+                      <th className="p-3 text-center w-36">Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/60">
                     {opdList.map((opd, idx) => (
                       <tr key={idx} className="hover:bg-slate-800/40 transition-colors">
-                        <td className="p-3 text-center font-mono text-slate-500">{idx + 1}</td>
+                        <td className="p-3 text-center font-mono font-bold text-slate-400">{idx + 1}</td>
                         <td className="p-3 font-medium text-slate-200">{opd}</td>
                         <td className="p-3 text-center">
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteOpd(opd)}
-                            className="px-2.5 py-1 bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded transition-colors text-[11px]"
-                            title="Hapus OPD"
-                          >
-                            <i className="fas fa-trash-alt"></i> Hapus
-                          </button>
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleEditOpd(opd)}
+                              className="px-2.5 py-1 bg-amber-950/80 hover:bg-amber-900 text-amber-300 border border-amber-800 rounded transition-colors text-[11px] font-semibold flex items-center gap-1"
+                              title="Edit OPD"
+                            >
+                              <i className="fas fa-edit"></i> Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteOpd(opd)}
+                              className="px-2.5 py-1 bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded transition-colors text-[11px] font-semibold flex items-center gap-1"
+                              title="Hapus OPD"
+                            >
+                              <i className="fas fa-trash-alt"></i> Hapus
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -271,25 +283,35 @@ export default function MasterDataPage() {
                 <table className="w-full text-xs text-left">
                   <thead>
                     <tr className="bg-slate-950 text-slate-400 border-b border-slate-800 font-semibold uppercase text-[10px] tracking-wider">
-                      <th className="p-3 w-12 text-center">No</th>
+                      <th className="p-3 w-12 text-center">No.</th>
                       <th className="p-3">Nama Skala Prioritas</th>
-                      <th className="p-3 text-center w-28">Aksi</th>
+                      <th className="p-3 text-center w-36">Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/60">
                     {priorityList.map((pri, idx) => (
                       <tr key={idx} className="hover:bg-slate-800/40 transition-colors">
-                        <td className="p-3 text-center font-mono text-slate-500">{idx + 1}</td>
+                        <td className="p-3 text-center font-mono font-bold text-slate-400">{idx + 1}</td>
                         <td className="p-3 font-semibold text-purple-300">{pri}</td>
                         <td className="p-3 text-center">
-                          <button
-                            type="button"
-                            onClick={() => handleDeletePriority(pri)}
-                            className="px-2.5 py-1 bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded transition-colors text-[11px]"
-                            title="Hapus Prioritas"
-                          >
-                            <i className="fas fa-trash-alt"></i> Hapus
-                          </button>
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleEditPriority(pri)}
+                              className="px-2.5 py-1 bg-amber-950/80 hover:bg-amber-900 text-amber-300 border border-amber-800 rounded transition-colors text-[11px] font-semibold flex items-center gap-1"
+                              title="Edit Prioritas"
+                            >
+                              <i className="fas fa-edit"></i> Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeletePriority(pri)}
+                              className="px-2.5 py-1 bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded transition-colors text-[11px] font-semibold flex items-center gap-1"
+                              title="Hapus Prioritas"
+                            >
+                              <i className="fas fa-trash-alt"></i> Hapus
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}

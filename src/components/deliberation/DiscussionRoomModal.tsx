@@ -166,8 +166,12 @@ export const DiscussionRoomModal: React.FC<DiscussionRoomModalProps> = ({
                 <div className="flex items-center gap-2 bg-slate-900 p-2.5 rounded-lg border border-slate-800 text-xs">
                   <i className="fas fa-file-pdf text-rose-400 text-xl flex-shrink-0"></i>
                   <div className="truncate flex-1">
-                    <p className="font-bold text-slate-200 truncate">Dokumen_TOR_RAB_{proposal.id}.pdf</p>
-                    <p className="text-[10px] text-slate-500 font-mono">2.4 MB &bull; Kerangka Acuan Kerja KAK &amp; RAB</p>
+                    <p className="font-bold text-slate-200 truncate">
+                      {proposal.attachment?.name || (proposal as any).lampiran?.name || `Dokumen_TOR_RAB_${proposal.id}_${proposal.opd.replace(/[\s\/\\]+/g, '_')}.pdf`}
+                    </p>
+                    <p className="text-[10px] text-slate-500 font-mono">
+                      {proposal.attachment?.size || (proposal as any).lampiran?.size || 'PDF Dokumen Resmi Usulan'} &bull; KAK &amp; RAB
+                    </p>
                   </div>
                 </div>
               </div>
@@ -295,14 +299,29 @@ export const DiscussionRoomModal: React.FC<DiscussionRoomModalProps> = ({
                   <i className="fas fa-file-pdf"></i>
                 </div>
                 <div>
-                  <h4 className="font-bold text-white text-sm">Dokumen_TOR_RAB_{proposal.id}.pdf</h4>
-                  <p className="text-[11px] text-slate-400">Berkas Lampiran Resmi Usulan {proposal.id} &bull; 2.4 MB PDF</p>
+                  <h4 className="font-bold text-white text-sm">
+                    {proposal.attachment?.name || (proposal as any).lampiran?.name || `Dokumen_TOR_RAB_${proposal.id}_${proposal.opd.replace(/[\s\/\\]+/g, '_')}.pdf`}
+                  </h4>
+                  <p className="text-[11px] text-slate-400">
+                    Berkas Lampiran Resmi Usulan {proposal.id} &bull; {proposal.attachment?.size || (proposal as any).lampiran?.size || 'PDF Dokumen Resmi Usulan'}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => alert('Mengunduh berkas lampiran PDF...')}
+                  onClick={() => {
+                    const docContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Lampiran ${proposal.id} - ${proposal.opd}</title><style>body{font-family:Arial,sans-serif;padding:30px;color:#1e293b;line-height:1.5;}.header{text-align:center;border-bottom:2px solid #0f172a;padding-bottom:10px;margin-bottom:20px;}.header h2{margin:0;text-transform:uppercase;font-size:16px;}.header h3{margin:5px 0 0 0;color:#334155;font-size:14px;}.meta-table,.data-table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:12px;}.meta-table td{padding:6px;border-bottom:1px solid #e2e8f0;}.data-table th,.data-table td{border:1px solid #cbd5e1;padding:8px;}.data-table th{background:#f1f5f9;text-align:left;}.justification{background:#f8fafc;border:1px solid #cbd5e1;padding:12px;border-radius:6px;font-style:italic;font-size:12px;}.footer{margin-top:40px;text-align:right;font-size:12px;}</style></head><body><div class="header"><h2>PEMERINTAH DAERAH PROVINSI</h2><h3>BERKAS LAMPIRAN TOR & RAB - ${proposal.opd.toUpperCase()}</h3></div><table class="meta-table"><tr><td width="30%"><strong>Kode Usulan:</strong></td><td>${proposal.id}</td></tr><tr><td><strong>OPD Pengusul:</strong></td><td>${proposal.opd}</td></tr><tr><td><strong>Kegiatan Utama:</strong></td><td>${proposal.namaKegiatan || proposal.activityName}</td></tr><tr><td><strong>Sub-Kegiatan:</strong></td><td>${proposal.subKegiatan || proposal.subActivityName || '-'}</td></tr></table><h4>RINCIAN ALOKASI PAGU ANGGARAN (RAB)</h4><table class="data-table"><thead><tr><th style="width:40px;text-align:center;">No</th><th>Uraian Kegiatan</th><th style="text-align:center;">Target Output</th><th style="text-align:right;">Pagu Usulan (Rp)</th></tr></thead><tbody><tr><td style="text-align:center;">1</td><td>${proposal.namaKegiatan || proposal.activityName} - ${proposal.subKegiatan || proposal.subActivityName || 'Pelaksanaan Sub-Kegiatan'}</td><td style="text-align:center;">${proposal.targetOutput || proposal.physicalTarget || '1 Paket Sesuai Target'}</td><td style="text-align:right;font-weight:bold;">${formatRp(proposal.proposedAddition || proposal.usulanTambah || proposal.initialBudget || 0)}</td></tr></tbody></table><h4>JUSTIFIKASI URGENSI KEBUTUHAN</h4><div class="justification">"${proposal.urgencyJustification || proposal.justifikasi || 'Usulan penambahan pagu indikatif untuk menunjang pencapaian target kinerja daerah.'}"</div><div class="footer"><div style="display:inline-block;text-align:center;"><p>Kepala / PPK ${proposal.opd}</p><br><br><br><p><strong><u>Pengelola Anggaran ${proposal.opd}</u></strong><br>NIP. 19800512 200501 1 008</p></div></div></body></html>`;
+                    const blob = new Blob([docContent], { type: 'text/html' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Dokumen_TOR_RAB_${proposal.id}_${proposal.opd.replace(/[\s\/\\]+/g, '_')}.html`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                  }}
                   className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow"
                 >
                   <i className="fas fa-download"></i> Unduh Berkas
@@ -317,52 +336,52 @@ export const DiscussionRoomModal: React.FC<DiscussionRoomModalProps> = ({
               </div>
             </div>
 
-            <div className="p-6 bg-slate-950 min-h-[460px] flex items-center justify-center">
-              <div className="w-full max-w-2xl bg-white text-slate-900 rounded-lg p-8 shadow-2xl space-y-5 font-serif text-xs leading-relaxed">
-                <div className="border-b-2 border-slate-900 pb-3 text-center">
-                  <h5 className="font-bold text-sm uppercase tracking-wide text-slate-900 m-0">PEMERINTAH DAERAH PROVINSI</h5>
-                  <h6 className="font-semibold text-xs text-slate-700 uppercase my-0.5">{proposal.opd}</h6>
-                  <p className="text-[10px] text-slate-500 m-0 font-sans">Berkas Lampiran Pendukung Rencana Kerja &amp; Kerangka Acuan Kerja (KAK / TOR)</p>
-                </div>
+            <div className="p-6 bg-slate-950 min-h-[460px] flex flex-col items-center justify-center relative">
+              {proposal.attachment?.url || (proposal as any).lampiran?.url ? (
+                <iframe
+                  src={proposal.attachment?.url || (proposal as any).lampiran?.url}
+                  className="w-full h-[520px] rounded-xl border border-slate-800 bg-slate-900 shadow-2xl"
+                  title="Pratinjau PDF Unggahan"
+                />
+              ) : (
+                <div className="w-full max-w-xl bg-slate-900/90 border border-slate-700/80 backdrop-blur-xl rounded-2xl p-8 shadow-2xl text-center space-y-5">
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-rose-950 to-red-900 border border-rose-700/60 text-rose-400 flex items-center justify-center mx-auto text-4xl shadow-xl shadow-rose-950/40">
+                    <i className="fas fa-file-pdf"></i>
+                  </div>
 
-                <div className="space-y-2 font-sans">
-                  <p className="font-bold text-xs underline text-slate-900">RINCIAN KEBUTUHAN RINCIAN BELANJA (RAB) &amp; JUSTIFIKASI URGENSI</p>
-                  <table className="w-full text-xs border-collapse border border-slate-300">
-                    <thead>
-                      <tr className="bg-slate-100 font-bold">
-                        <th className="border border-slate-300 p-1.5 text-center">No</th>
-                        <th className="border border-slate-300 p-1.5 text-left">Komponen Uraian Pekerjaan</th>
-                        <th className="border border-slate-300 p-1.5 text-center">Volume</th>
-                        <th className="border border-slate-300 p-1.5 text-right">Harga Satuan</th>
-                        <th className="border border-slate-300 p-1.5 text-right">Total Anggaran</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td className="border border-slate-300 p-1.5 text-center">1</td>
-                        <td className="border border-slate-300 p-1.5 font-medium">{proposal.namaKegiatan || proposal.activityName}</td>
-                        <td className="border border-slate-300 p-1.5 text-center">1 Paket</td>
-                        <td className="border border-slate-300 p-1.5 text-right font-mono">{formatRp(proposal.proposedAddition || proposal.usulanTambah || 0)}</td>
-                        <td className="border border-slate-300 p-1.5 text-right font-mono font-bold">{formatRp(proposal.proposedAddition || proposal.usulanTambah || 0)}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+                  <div>
+                    <span className="px-3 py-1 bg-rose-950/80 border border-rose-700 text-rose-300 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                      Berkas PDF Unggahan Pengusul
+                    </span>
+                    <h3 className="text-base font-bold text-white mt-2 truncate">
+                      {proposal.attachment?.name || (proposal as any).lampiran?.name || `Dokumen_Proposal_${proposal.id}_${proposal.opd.replace(/[\s\/\\]+/g, '_')}.pdf`}
+                    </h3>
+                    <p className="text-xs text-slate-400 font-mono mt-1">
+                      {proposal.opd} &bull; Usulan {proposal.id}
+                    </p>
+                  </div>
 
-                <div className="bg-slate-50 p-3 rounded border border-slate-200 text-[11px] font-sans">
-                  <p className="font-bold text-slate-800 m-0">Justifikasi Urgensi Kebutuhan:</p>
-                  <p className="text-slate-600 m-0 mt-1 italic">"{proposal.urgencyJustification || proposal.justifikasi}"</p>
-                </div>
+                  <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs text-slate-300 text-left space-y-2 font-mono">
+                    <div className="flex justify-between border-b border-slate-800 pb-1.5">
+                      <span className="text-slate-500">Kategori Berkas:</span>
+                      <span className="text-indigo-400 font-bold">Dokumen Proposal PDF</span>
+                    </div>
+                    <div className="flex justify-between border-b border-slate-800 pb-1.5">
+                      <span className="text-slate-500">Ukuran Berkas:</span>
+                      <span className="text-slate-300">{proposal.attachment?.size || (proposal as any).lampiran?.size || 'PDF Dokumen Resmi'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Status Pratinjau:</span>
+                      <span className="text-emerald-400 font-semibold">Tersimpan di Database</span>
+                    </div>
+                  </div>
 
-                <div className="flex justify-end pt-4 font-sans text-[11px]">
-                  <div className="text-center w-56">
-                    <p className="m-0 font-semibold">Pejabat Pembuat Komitmen (PPK)</p>
-                    <div className="h-16"></div>
-                    <p className="m-0 font-bold underline">H. Ahmad Fauzi, S.T., M.M.</p>
-                    <p className="m-0 text-slate-500 text-[10px]">NIP. 19780412 200312 1 004</p>
+                  <div className="p-3 bg-amber-950/40 border border-amber-800/60 rounded-xl text-[11px] text-amber-300 text-left flex items-start gap-2">
+                    <i className="fas fa-info-circle text-amber-400 mt-0.5 flex-shrink-0"></i>
+                    <span>Pratinjau TOR &amp; RAB dinonaktifkan sementara. Menampilkan pratinjau berkas PDF asli yang diunggah oleh OPD.</span>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
