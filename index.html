@@ -294,7 +294,21 @@
       max-height: 90vh;
       overflow-y: auto;
       box-shadow: var(--shadow-card);
-      animation: slideUp .3s ease;
+    }
+
+    @media (max-width: 767px) {
+      .mobile-sidebar-open {
+        transform: translateX(0) !important;
+      }
+      .modal-box {
+        max-height: 95vh;
+        border-radius: 12px;
+      }
+      .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
     }
 
     .sidebar-link {
@@ -942,10 +956,12 @@
 
   <!-- ======== APP SHELL ======== -->
   <div id="app-shell" class="hidden h-screen overflow-hidden" style="display:none">
-    <div class="flex h-full">
+    <!-- Backdrop Overlay Mobile -->
+    <div id="sidebar-backdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 z-40 bg-slate-950/80 backdrop-blur-sm hidden md:hidden transition-opacity duration-300"></div>
+    <div class="flex h-full relative">
       <!-- Sidebar -->
-      <aside class="w-56 flex-shrink-0 bg-slate-950 border-r border-slate-800/80 flex flex-col">
-        <div class="p-4 border-b border-slate-800/80">
+      <aside id="app-sidebar" class="fixed md:static inset-y-0 left-0 z-50 w-64 md:w-56 flex-shrink-0 bg-slate-950 border-r border-slate-800/80 flex flex-col transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl md:shadow-none">
+        <div class="p-4 border-b border-slate-800/80 flex items-center justify-between">
           <div class="flex items-center gap-2">
             <div
               class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 to-blue-700 flex items-center justify-center">
@@ -956,6 +972,9 @@
               <p class="text-[9px] text-slate-500 leading-tight">Desk Anggaran Daerah</p>
             </div>
           </div>
+          <button onclick="toggleMobileSidebar()" class="md:hidden text-slate-400 hover:text-white p-1" title="Tutup Menu">
+            <i class="fas fa-times text-sm"></i>
+          </button>
         </div>
         <div class="p-3 border-b border-slate-800/80">
           <!-- User profile in sidebar -->
@@ -1023,12 +1042,17 @@
       <!-- Main -->
       <main class="flex-1 overflow-y-auto bg-slate-950 flex flex-col">
         <header
-          class="sticky top-0 z-30 bg-slate-950/95 backdrop-blur border-b border-slate-800/60 px-6 py-3 flex items-center justify-between flex-shrink-0">
-          <div>
-            <h2 id="page-title" class="text-sm font-bold text-white font-jakarta"></h2>
-            <p id="page-subtitle" class="text-xs text-slate-500"></p>
+          class="sticky top-0 z-30 bg-slate-950/95 backdrop-blur border-b border-slate-800/60 px-4 sm:px-6 py-3 flex items-center justify-between flex-shrink-0 flex-wrap gap-2">
+          <div class="flex items-center gap-3">
+            <button onclick="toggleMobileSidebar()" class="md:hidden p-2 text-slate-300 hover:text-white rounded-lg bg-slate-900 border border-slate-800 focus:outline-none" title="Buka Menu">
+              <i class="fas fa-bars text-base"></i>
+            </button>
+            <div>
+              <h2 id="page-title" class="text-sm font-bold text-white font-jakarta"></h2>
+              <p id="page-subtitle" class="text-xs text-slate-500 hidden sm:block"></p>
+            </div>
           </div>
-          <div class="flex items-center gap-3 flex-wrap">
+          <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
             <!-- Theme Toggle Button -->
             <button onclick="toggleTheme()" class="theme-toggle-btn" title="Beralih Mode Tampilan">
               <i class="fas fa-moon text-indigo-600 theme-toggle-icon"></i>
@@ -2822,10 +2846,38 @@
     }
 
     // ═══════════════════════════════════════════════════════════
+    // MOBILE RESPONSIVE SIDEBAR NAVIGATION
+    // ═══════════════════════════════════════════════════════════
+
+    function toggleMobileSidebar() {
+      const sidebar = document.getElementById('app-sidebar');
+      const backdrop = document.getElementById('sidebar-backdrop');
+      if (!sidebar) return;
+      const isOpen = sidebar.classList.contains('mobile-sidebar-open');
+      if (isOpen) {
+        sidebar.classList.remove('mobile-sidebar-open');
+        if (backdrop) backdrop.classList.add('hidden');
+      } else {
+        sidebar.classList.add('mobile-sidebar-open');
+        if (backdrop) backdrop.classList.remove('hidden');
+      }
+    }
+
+    function closeMobileSidebarOnSmallScreens() {
+      if (window.innerWidth < 768) {
+        const sidebar = document.getElementById('app-sidebar');
+        const backdrop = document.getElementById('sidebar-backdrop');
+        if (sidebar) sidebar.classList.remove('mobile-sidebar-open');
+        if (backdrop) backdrop.classList.add('hidden');
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════
     // NAVIGATION
     // ═══════════════════════════════════════════════════════════
 
     function switchPage(page) {
+      closeMobileSidebarOnSmallScreens();
       if (page === 'executive' && !isExecutiveAllowed()) {
         showToast('Akses ditolak. Ringkasan Eksekutif hanya dapat diakses oleh akun level TAPD dan Super User.', 'error');
         return;
