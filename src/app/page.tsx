@@ -21,83 +21,8 @@ import { AuditTrailTimeline } from '../components/deliberation/AuditTrailTimelin
 import { BeritaAcaraPrintView } from '../components/minutes/BeritaAcaraPrintView';
 import { MASTER_49_OPD } from './(dashboard)/admin/users/page';
 
-// Initial Mock Proposals
-const initialProposals: BudgetProposal[] = [
-  {
-    id: 'USL-2027-001',
-    opd: 'Badan Penanggulangan Bencana Daerah',
-    category: 'Penambahan Pagu OPD',
-    priority: 'Prioritas 1 (Wajib)',
-    activityName: 'Pengadaan Logistik Siaga Bencana & EWS Tsunami',
-    subActivityName: 'Pengadaan Sirene EWS 5 Unit & Perahu Karet 10 Unit',
-    initialBudget: 500000000,       // P1: Rp 500.000.000
-    proposedAddition: 1500000000,   // P2: Rp 1.500.000.000 (Spike > 50%)
-    approvedBudget: 1500000000,     // P4: Rp 1.500.000.000
-    status: 'Disetujui',
-    targetOutput: '5 Unit Sirene EWS & 10 Unit Perahu Karet Siaga',
-    urgencyJustification: 'Menghadapi potensi cuaca ekstrem cuaca hidrometeorologi dan mitigasi bencana pesisir pantai.',
-    tanggalInput: '2026-09-20',
-    auditLogs: [
-      { timestamp: '2026-09-20 09:00', actorName: 'BPBD Operator', actorRole: 'OPD', actionText: 'Mengirimkan usulan awal ke meja pembahasan Bappeda.' },
-      { timestamp: '2026-09-21 14:30', actorName: 'Tim TAPD', actorRole: 'TAPD', actionText: 'Menyetujui usulan pagu sebesar Rp 1.500.000.000.' }
-    ]
-  },
-  {
-    id: 'USL-2027-002',
-    opd: 'Dinas Komunikasi dan Informatika',
-    category: 'Penambahan Pagu OPD',
-    priority: 'Prioritas 2 (RPJMD)',
-    activityName: 'Pengembangan Infrastruktur Data Center & Bandwidth OPD',
-    subActivityName: 'Migrasi Cloud Server & Lisensi Keamanan Siber',
-    initialBudget: 1200000000,      // P1: Rp 1.200.000.000
-    proposedAddition: 800000000,    // P2: Rp 800.000.000
-    approvedBudget: 600000000,      // P4: Rp 600.000.000
-    status: 'Disetujui Parsial',
-    targetOutput: 'Kapasitas Server 100 TB & Lisensi Firewall Aktif',
-    urgencyJustification: 'Integrasi sistem SPBE Provinsi dan peningkatan keamanan siber daerah.',
-    tanggalInput: '2026-09-21',
-    auditLogs: [
-      { timestamp: '2026-09-21 10:15', actorName: 'Diskominfo Admin', actorRole: 'OPD', actionText: 'Input usulan penambahan bandwidth.' },
-      { timestamp: '2026-09-22 11:00', actorName: 'Tim TAPD', actorRole: 'TAPD', actionText: 'Menetapkan persetujuan parsial Rp 600.000.000.' }
-    ]
-  },
-  {
-    id: 'USL-2027-003',
-    opd: 'Dinas Kesehatan',
-    category: 'Belanja Hibah',
-    priority: 'Prioritas 1 (Wajib)',
-    activityName: 'Pengadaan Alat Kesehatan & Renovasi Puskesmas Terpencil',
-    subActivityName: 'Pengadaan USG 10 Unit & Renovasi Faskes',
-    initialBudget: 2000000000,      // P1: Rp 2.000.000.000
-    proposedAddition: 2500000000,   // P2: Rp 2.500.000.000
-    approvedBudget: 2500000000,     // P4: Rp 2.500.000.000
-    status: 'Disetujui',
-    targetOutput: '10 Unit USG Terdistribusi ke Puskesmas 3T',
-    urgencyJustification: 'Peningkatan penanganan kesehatan ibu hamil dan stunting di wilayah terpencil.',
-    tanggalInput: '2026-09-22',
-    auditLogs: [
-      { timestamp: '2026-09-22 13:00', actorName: 'Dinkes Operator', actorRole: 'OPD', actionText: 'Mengajukan alokasi hibah pengadaan alkes.' }
-    ]
-  },
-  {
-    id: 'USL-2027-004',
-    opd: 'Dinas Pendidikan Dan Kebudayaan',
-    category: 'Penambahan Pagu OPD',
-    priority: 'Prioritas 1 (Wajib)',
-    activityName: 'Rehabilitasi Ruang Kelas Rusak Berat Sekolah Menengah',
-    subActivityName: 'Rehab 15 Gedung Sekolah SMA/SMK',
-    initialBudget: 3500000000,      // P1: Rp 3.500.000.000
-    proposedAddition: 4000000000,   // P2: Rp 4.000.000.000
-    approvedBudget: 0,              // P4: Belum disetujui / Dibahas
-    status: 'Sedang Dibahas',
-    targetOutput: '15 Ruang Kelas SMA/SMK Siap Digunakan',
-    urgencyJustification: 'Kondisi bangunan kelas rawan roboh membahayakan siswa saat proses pembelajaran.',
-    tanggalInput: '2026-09-23',
-    auditLogs: [
-      { timestamp: '2026-09-23 08:30', actorName: 'Disdikbud Admin', actorRole: 'OPD', actionText: 'Mengirim usulan awal rehab sekolah.' }
-    ]
-  }
-];
+// Initial Proposals (Bersih)
+const initialProposals: BudgetProposal[] = [];
 
 export default function DashboardPage() {
   // Session Active State
