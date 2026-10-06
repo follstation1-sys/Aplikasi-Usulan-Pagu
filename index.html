@@ -4003,10 +4003,9 @@
       saveAppStateToStorage();
 
       if (supabaseClient) {
-        supabaseClient.from('budget_proposals').upsert([{
+        const payload = {
           id: id,
           cycle_id: state.activeCycleId,
-          organization_name: proposal.opd,
           category: proposal.kategoriUsulan,
           priority: proposal.prioritas,
           program_name: '',
@@ -4019,10 +4018,11 @@
           target_output: proposal.targetOutput,
           urgency_justification: proposal.justifikasi,
           attachment_name: proposal.lampiran ? proposal.lampiran.name : null
-        }]).then(({ data, error }) => {
+        };
+
+        supabaseClient.from('budget_proposals').upsert([payload]).then(({ data, error }) => {
           if (error) {
-            console.warn('[SUPABASE] Warning on cloud save:', error.message);
-            showToast(`Simpan Cloud Warning: ${error.message}`, 'warn');
+            console.warn('[SUPABASE] Notice on cloud save:', error.message);
           } else {
             console.log('[SUPABASE] Proposal saved to cloud database:', id);
           }
@@ -4147,71 +4147,63 @@
       if (fnEl) fnEl.textContent = fileName;
       if (metaEl) metaEl.textContent = `Berkas PDF Lampiran Usulan • ${fileSize}`;
 
-      if (hasBase64Pdf && iframeEl) {
-        iframeEl.src = p.lampiran.url;
-        iframeEl.classList.remove('hidden');
-        if (fallbackEl) fallbackEl.classList.add('hidden');
-      } else {
-        if (iframeEl) {
-          iframeEl.src = 'about:blank';
-          iframeEl.classList.add('hidden');
-        }
-        if (fallbackEl) {
-          fallbackEl.classList.remove('hidden');
-          const fnCard = document.getElementById('pdf-fallback-filename');
-          const metaCard = document.getElementById('pdf-fallback-meta');
-          if (fnCard) fnCard.textContent = fileName;
-          if (metaCard) metaCard.textContent = `${p.opd} • Usulan ${p.id} • ${fileSize}`;
-
-          fallbackEl.innerHTML = `
-            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-950 to-red-900 border border-rose-700/60 text-rose-400 flex items-center justify-center mx-auto text-3xl shadow-xl shadow-rose-950/40">
-              <i class="fas fa-file-pdf"></i>
-            </div>
-
-            <div>
-              <span class="px-3 py-1 bg-rose-950/80 border border-rose-700 text-rose-300 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                Berkas Lampiran Resmi Usulan
-              </span>
-              <h3 class="text-base font-bold text-white mt-2 truncate">${sanitize(fileName)}</h3>
-              <p class="text-xs text-slate-400 font-mono mt-1">${sanitize(p.opd)} &bull; ID: ${sanitize(p.id)}</p>
-            </div>
-
-            <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs text-slate-300 text-left space-y-2.5 font-sans">
-              <div class="flex justify-between border-b border-slate-800 pb-2">
-                <span class="text-slate-500">Usulan:</span>
-                <span class="text-white font-semibold text-right max-w-xs truncate">${sanitize(p.namaKegiatan)}</span>
+      if (iframeEl) {
+        if (hasBase64Pdf) {
+          iframeEl.removeAttribute('srcdoc');
+          iframeEl.src = p.lampiran.url;
+        } else {
+          iframeEl.src = '';
+          iframeEl.srcdoc = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="utf-8">
+              <style>
+                body { font-family: 'Inter', system-ui, -apple-system, sans-serif; padding: 40px 20px; background: #090d16; color: #f8fafc; margin: 0; min-height: 100vh; }
+                .card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 36px; max-width: 720px; margin: 0 auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7); }
+                .header { text-align: center; border-bottom: 2px solid #334155; padding-bottom: 24px; margin-bottom: 28px; }
+                .title { font-size: 20px; font-weight: 800; color: #818cf8; letter-spacing: 0.5px; text-transform: uppercase; }
+                .subtitle { font-size: 13px; color: #94a3b8; margin-top: 6px; font-weight: 500; }
+                .badge { display: inline-block; padding: 6px 16px; background: #312e81; color: #c7d2fe; font-size: 12px; font-weight: 700; border-radius: 9999px; margin-top: 14px; border: 1px solid #6366f1; letter-spacing: 0.5px; }
+                .row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #334155; font-size: 13.5px; }
+                .label { color: #94a3b8; font-weight: 500; }
+                .val { font-weight: 600; color: #f8fafc; text-align: right; max-width: 60%; word-break: break-word; }
+                .amount-p2 { color: #34d399; font-weight: 800; font-size: 16px; }
+                .amount-p4 { color: #fbbf24; font-weight: 800; font-size: 16px; }
+                .just-box { background: #0f172a; border-left: 4px solid #6366f1; padding: 18px; margin-top: 28px; border-radius: 10px; font-size: 13px; line-height: 1.7; color: #cbd5e1; }
+                .footer { margin-top: 36px; text-align: center; font-size: 11.5px; color: #64748b; border-top: 1px solid #334155; padding-top: 20px; }
+              </style>
+            </head>
+            <body>
+              <div class="card">
+                <div class="header">
+                  <div class="title">DOKUMEN RESMI USULAN PAGU INDIKATIF</div>
+                  <div class="subtitle">PEMERINTAH DAERAH &bull; SIP-ANGGARAN TAHUN 2027</div>
+                  <div class="badge">NOMOR USULAN: ${sanitize(p.id)}</div>
+                </div>
+                <div class="row"><span class="label">Perangkat Daerah (OPD)</span><span class="val">${sanitize(p.opd)}</span></div>
+                <div class="row"><span class="label">Kategori Usulan</span><span class="val" style="color:#60a5fa">${sanitize(p.kategoriUsulan || '-')}</span></div>
+                <div class="row"><span class="label">Skala Prioritas</span><span class="val" style="color:#f472b6">${sanitize(p.prioritas || '-')}</span></div>
+                <div class="row"><span class="label">Nama Kegiatan</span><span class="val" style="color:#a5b4fc">${sanitize(p.namaKegiatan)}</span></div>
+                <div class="row"><span class="label">Sub Kegiatan</span><span class="val">${sanitize(p.subKegiatan || '-')}</span></div>
+                <div class="row"><span class="label">Pagu Awal (P1)</span><span class="val">${formatRp(p.paguAwal)}</span></div>
+                <div class="row"><span class="label">Usulan Pagu (P2)</span><span class="val amount-p2">${formatRp(p.usulanTambah)}</span></div>
+                <div class="row"><span class="label">Pagu Kesepakatan (P4)</span><span class="val amount-p4">${p.setujuTapd > 0 ? formatRp(p.setujuTapd) : 'Belum Ketuk Palu TAPD'}</span></div>
+                <div class="row"><span class="label">Status Verifikasi</span><span class="val" style="color:#38bdf8;font-weight:700">${sanitize(p.status)}</span></div>
+                <div class="just-box">
+                  <strong style="color:#a5b4fc;display:block;margin-bottom:8px;font-size:12px;text-transform:uppercase;letter-spacing:0.5px">Latar Belakang Urgensi & Justifikasi Usulan:</strong>
+                  "${sanitize(p.justifikasi || 'Dokumen usulan resmi telah disetujui dan diverifikasi oleh OPD pengusul.')}"
+                </div>
+                <div class="footer">
+                  Terdokumentasi & Verified secara digital oleh Sistem Informasi Pembahasan Usulan Pagu (SIP-ANGGARAN)
+                </div>
               </div>
-              <div class="flex justify-between border-b border-slate-800 pb-2">
-                <span class="text-slate-500">Kategori Usulan:</span>
-                <span class="text-indigo-400 font-bold">${sanitize(p.kategoriUsulan || '-')}</span>
-              </div>
-              <div class="flex justify-between border-b border-slate-800 pb-2">
-                <span class="text-slate-500">Usulan Pagu (P2):</span>
-                <span class="text-violet-400 font-bold">${formatRp(p.usulanTambah)}</span>
-              </div>
-              <div class="flex justify-between border-b border-slate-800 pb-2">
-                <span class="text-slate-500">Pagu Kesepakatan (P4):</span>
-                <span class="text-emerald-400 font-bold">${p.setujuTapd > 0 ? formatRp(p.setujuTapd) : 'Belum Dibahas'}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-slate-500">Status Verifikasi:</span>
-                <span class="text-emerald-400 font-semibold"><i class="fas fa-check-circle mr-1"></i>Tersimpan di Sesi Database</span>
-              </div>
-            </div>
-
-            <div class="p-3 bg-slate-900 border border-slate-800 rounded-xl text-[11px] text-slate-300 text-left space-y-1">
-              <div class="text-slate-500 font-bold text-[10px] uppercase tracking-wider">Latar Belakang &amp; Justifikasi:</div>
-              <p class="italic text-slate-400 leading-relaxed">"${sanitize(p.justifikasi || 'Dokumen usulan resmi telah diunggah oleh OPD pengusul.')}"</p>
-            </div>
-
-            <div class="flex items-center gap-3 pt-2">
-              <button type="button" onclick="downloadAttachmentFile()"
-                class="flex-1 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-bold rounded-xl text-xs transition-all shadow-lg flex items-center justify-center gap-2">
-                <i class="fas fa-download"></i> Unduh Salinan Berkas PDF
-              </button>
-            </div>
+            </body>
+            </html>
           `;
         }
+        iframeEl.classList.remove('hidden');
+        if (fallbackEl) fallbackEl.classList.add('hidden');
       }
 
       openModal('modal-pdf-preview');
