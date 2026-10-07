@@ -2380,6 +2380,9 @@
     // MASTER LIST DAFAR 49 PERANGKAT DAERAH (OPD)
     // ═══════════════════════════════════════════════════════════
 
+    let OPD_MAP = {};
+    let OPD_ID_MAP = {};
+
     let OPD_LIST = [
       "Dinas Pendidikan Dan Kebudayaan",
       "Dinas Kesehatan",
@@ -3986,7 +3989,9 @@
           saveAppStateToStorage();
 
           if (supabaseClient) {
+            const orgUuid = OPD_MAP[p.opd] || 'abdef614-d366-434d-a10a-98a5b3afc070';
             supabaseClient.from('budget_proposals').update({
+              organization_id: orgUuid,
               program_name: p.opd,
               category: p.kategoriUsulan,
               priority: p.prioritas,
@@ -4020,9 +4025,11 @@
       saveAppStateToStorage();
 
       if (supabaseClient) {
+        const orgUuid = OPD_MAP[proposal.opd] || 'abdef614-d366-434d-a10a-98a5b3afc070';
         const payload = {
           id: id,
           cycle_id: state.activeCycleId,
+          organization_id: orgUuid,
           category: proposal.kategoriUsulan,
           priority: proposal.prioritas,
           program_name: proposal.opd,
@@ -5559,9 +5566,15 @@ Justifikasi   :
       if (!supabaseClient) return;
       try {
         // 1. Sync OPD Organizations List from Supabase Database
-        const { data: dbOrgs, error: orgErr } = await supabaseClient.from('organizations').select('name').order('name', { ascending: true });
+        const { data: dbOrgs, error: orgErr } = await supabaseClient.from('organizations').select('id, name, code').order('name', { ascending: true });
         if (!orgErr && Array.isArray(dbOrgs) && dbOrgs.length > 0) {
           OPD_LIST = dbOrgs.map(o => o.name);
+          dbOrgs.forEach(o => {
+            if (o.name && o.id) {
+              OPD_MAP[o.name] = o.id;
+              OPD_ID_MAP[o.id] = o.name;
+            }
+          });
           populateAllOpdSelectors();
           renderMasterOpdList();
           console.log('[SUPABASE] Synced', OPD_LIST.length, 'OPD organizations from Supabase database.');
@@ -5569,6 +5582,9 @@ Justifikasi   :
 
         // 2. Sync Budget Proposals from Supabase Database
         const { data: dbProposals, error: propErr } = await supabaseClient.from('budget_proposals').select('*').order('created_at', { ascending: false });
+        if (propErr) {
+          console.warn('[SUPABASE PROPOSALS ERR]', propErr.message);
+        }
         if (!propErr && Array.isArray(dbProposals) && dbProposals.length > 0) {
           dbProposals.forEach(row => {
             const targetCycleId = row.cycle_id || state.activeCycleId;
@@ -5581,7 +5597,7 @@ Justifikasi   :
             }
             const cycleObj = state.cycles[targetCycleId];
             const existing = cycleObj.proposals.find(p => p.id === row.id);
-            const dbOpd = row.program_name || row.organization_name || row.opd_name || row.opd;
+            const dbOpd = row.program_name || (row.organization_id ? OPD_ID_MAP[row.organization_id] : null) || row.organization_name || row.opd_name || row.opd;
             if (!existing) {
               cycleObj.proposals.unshift({
                 id: row.id,
