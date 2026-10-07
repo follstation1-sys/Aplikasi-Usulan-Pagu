@@ -1111,6 +1111,11 @@
               <i class="fas fa-plus-circle text-sm text-indigo-200"></i> + Usulan Baru
             </button>
             <div class="flex items-center gap-2 flex-shrink-0 ml-auto">
+              <button onclick="manualSyncFromCloud()"
+                class="px-3 py-1.5 bg-indigo-700 hover:bg-indigo-600 text-white text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 shadow-md shadow-indigo-950/30 whitespace-nowrap"
+                title="Sinkronkan Data Terbaru dari Database Cloud Supabase">
+                <i class="fas fa-sync-alt text-indigo-200"></i> Sync Cloud
+              </button>
               <button id="btn-import-excel" onclick="showImportModal()"
                 class="px-3 py-1.5 bg-teal-700 hover:bg-teal-600 text-white text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 shadow-md shadow-teal-950/30 whitespace-nowrap"
                 title="Import Usulan dari Excel CSV">
@@ -3991,8 +3996,7 @@
               proposed_addition: p.usulanTambah,
               target_output: p.targetOutput,
               urgency_justification: p.justifikasi,
-              attachment_name: p.lampiran ? p.lampiran.name : null,
-              attachment_url: p.lampiran ? p.lampiran.url : null
+              attachment_name: p.lampiran ? p.lampiran.name : null
             }).eq('id', p.id).then(({ error }) => {
               if (error) console.warn('[SUPABASE] Notice on update:', error.message);
               else console.log('[SUPABASE] Proposal updated in database:', p.id);
@@ -4030,15 +4034,15 @@
           status: 'Diajukan',
           target_output: proposal.targetOutput,
           urgency_justification: proposal.justifikasi,
-          attachment_name: proposal.lampiran ? proposal.lampiran.name : null,
-          attachment_url: proposal.lampiran ? proposal.lampiran.url : null
+          attachment_name: proposal.lampiran ? proposal.lampiran.name : null
         };
 
         supabaseClient.from('budget_proposals').upsert([payload]).then(({ data, error }) => {
           if (error) {
             console.warn('[SUPABASE] Notice on cloud save:', error.message);
+            showToast(`Gagal Simpan Cloud: ${error.message}`, 'warn');
           } else {
-            console.log('[SUPABASE] Proposal saved to cloud database:', id);
+            console.log('[SUPABASE] Proposal saved to cloud database successfully:', id);
           }
         }).catch(err => console.warn('[SUPABASE] Error:', err));
       }
@@ -5639,6 +5643,12 @@ Justifikasi   :
       } catch (err) {
         console.warn('[SUPABASE] Sync error:', err);
       }
+    }
+
+    async function manualSyncFromCloud() {
+      showToast('Sedang menarik data usulan terbaru dari Cloud Supabase...', 'info');
+      await syncFromSupabaseDatabase();
+      showToast('Data Cloud Supabase berhasil disinkronkan!', 'success');
     }
 
     // ═══════════════════════════════════════════════════════════
